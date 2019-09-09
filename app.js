@@ -15,7 +15,7 @@ const privateKey = fs.readFileSync("./security/private.key");
 const response = require("./model/response");
 const { verifyToken } = require("./security/token");
 
-const port = 3001;
+const port = 3002;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
