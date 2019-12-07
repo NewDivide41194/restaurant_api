@@ -1,0 +1,8 @@
+GET http://localhost:3001/user
+
+POST http://localhost:3001/user
+Content-Type: application/json
+{
+    "userName":"admin",
+    "password":"admin"
+}
