@@ -55,7 +55,6 @@ app.post("/api/user/login", (req, res) => {
       token:token,
       data:data
     }
-    console.log(tokenData)
 
     dbcon.query(selectLogin, (err, result, fields) => {
       if (result.length == 0) {
@@ -66,21 +65,6 @@ app.post("/api/user/login", (req, res) => {
     });
   });
 
-  
-  // .then(data => {
-  //   if (data.length == 0) {
-  //     res.json(
-  //       response({ success: false, message: "email and password not match" })
-  //     );
-  //   }
-  //   res.json(response({ success: true, payload: data }));
-  // })
-  // .catch(err => {
-  //   res.json(response({ success: false, message: err }));
-  // });
-  // else if (result[0].password != user.password) {
-  //   console.log("Password Incorrect!");
-  // }
 });
 
 app.get("/api/user/nav",
@@ -98,7 +82,6 @@ app.get("/api/user/nav",
           if (err) throw err;
           dbcon.query(selectNav, (err, result, fields) => {
             if (err) throw err
-            console.log(result);
              
             const data=[]
           data.push(result)           
