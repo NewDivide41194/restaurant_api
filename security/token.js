@@ -7,11 +7,17 @@ const produceToken = (payload) => {
     return jwt.sign(payload, privateKey, { algorithm: 'RS256', expiresIn: "1d" });
 }
 
-const verifyToken = (token, callback) => {
-    jwt.verify(token, publicKey, (err, res) => {
-        if (err) callback(err, null)
-        else callback(null, res)
-    })
-}
+const verifyToken = (req, res, next) => {
+    const header = req.headers['authorization'];
+
+    if(typeof header !== 'undefined') {
+        const bearer = header.split(' ');
+        const token = bearer[1];
+
+        req.token = token;
+        next();
+    } else {res.sendStatus(403);
+    
+}}
 module.exports.produceToken = produceToken;
 module.exports.verifyToken = verifyToken;                                  

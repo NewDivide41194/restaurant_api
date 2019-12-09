@@ -6,7 +6,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const app = express();
 const bcrypt = require("bcryptjs");
-const {produceToken}=require("./security/token")
+const {produceToken,verifyToken}=require("./security/token")
 
 const port = 3001;
 const response = ({
@@ -34,6 +34,7 @@ app.use((req, res, next) => {
   next();
 });
 
+
 app.post("/api/user/login", (req, res) => {
   const dbcon = mysql.createConnection({
     host: "localhost",
@@ -45,16 +46,22 @@ app.post("/api/user/login", (req, res) => {
   const selectLogin = `SELECT * FROM tbl_user WHERE password = '${user.password}' AND userName='${user.name}' `;
 
   dbcon.connect(err => {
+    if (err) throw err;
+
     const data = [];
     data.push(user);
-    const token = produceToken(data);
+    const token = produceToken(data[0]);
+    const tokenData={
+      token:token,
+      data:data
+    }
+    console.log(tokenData)
 
-    if (err) throw err;
     dbcon.query(selectLogin, (err, result, fields) => {
       if (result.length == 0) {
-        res.json(response({ success: false, message: "Login Fail!" }));
+        res.json(response({ success: false, message: "Login Fail!",payload:null }));
       } else {
-        res.json(response({ success: true, payload: data[0].name }));
+        res.json(response({ success: true, payload: tokenData }));
       }
     });
   });
@@ -76,7 +83,7 @@ app.post("/api/user/login", (req, res) => {
   // }
 });
 
-app.get("api/user/nav",
+app.get("/api/user/nav",
     (req, res) => {
       const dbcon = mysql.createConnection({
         host: "localhost",
@@ -92,10 +99,10 @@ app.get("api/user/nav",
           dbcon.query(selectNav, (err, result, fields) => {
             if (err) throw err
             console.log(result);
-            (result) 
+             
             const data=[]
           data.push(result)           
-              res.json(response({ success: true, payload: data[0] }));            
+              res.json(response({ success: true, payload: data }));            
           });
         });     
     });
