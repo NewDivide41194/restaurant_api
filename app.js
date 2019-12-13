@@ -66,9 +66,7 @@ app.get("/api/user/nav", verifyToken, (req, res) => {
   jwt.verify(req.token, privateKey, err => {
     if (err) {
       res.sendStatus(403);
-      console.log(req.headers);
     } else {
-      console.log(req.headers);
 
       const dbcon = mysql.createConnection(
         {
@@ -80,12 +78,11 @@ app.get("/api/user/nav", verifyToken, (req, res) => {
         console.log("connected")
       );
       const selectNav =
-        "SELECT tbl_user.userName,tbl_employee.employeeImage,tbl_designation.designation FROM tbl_user JOIN tbl_employee tbl_employee ON tbl_user.employeeId=tbl_employee.employeeId JOIN tbl_designation ON tbl_employee.designationId=tbl_designation.designationId";
+        "SELECT tbl_user.userId,tbl_user.userName,tbl_employee.employeeImage,tbl_designation.designation FROM tbl_user JOIN tbl_employee tbl_employee ON tbl_user.employeeId=tbl_employee.employeeId JOIN tbl_designation ON tbl_employee.designationId=tbl_designation.designationId";
       dbcon.connect(err => {
         if (err) throw err;
         dbcon.query(selectNav, (err, result, fields) => {
           if (err) throw err;
-
           const data = [];
           data.push(result);
           res.json(response({ success: true, payload: data }));
@@ -107,7 +104,7 @@ app.get("/api/user/role", (req, res) => {
       console.log("connected")
     );
     const selectRole =
-    "SELECT tbl_role.roleId,tbl_role.roleName,tbl_role.active,tbl_role.remark,tbl_role.createdDate,tbl_employee.employeeName FROM tbl_user JOIN tbl_employee ON tbl_user.employeeId=tbl_employee.employeeId JOIN tbl_role ON tbl_user.roleId=tbl_role.roleId";
+    "select user.userId,role.roleId,role.roleName,role.active,role.remark,role.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_role as role ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId";
     dbcon.connect(err => {
       if (err) throw err;
       dbcon.query(selectRole, (err, result, fields) => {
@@ -131,29 +128,53 @@ app.post("/api/user/role/addRole", (req, res) => {
     },
     console.log("connected")
   );
-  const InsertRoleName=req.body.newData.RoleName
-  const InsertRemark=req.body.newData.Remark
-  const InsertActive=req.body.newData.active
-  const InsertDate=req.body.newData.createdDate
+  const InsertRoleName=req.body.roleName
+  const InsertRemark=req.body.remark
+  const InsertActive=req.body.active
+  const InsertDate=req.body.createdDate
   console.log(req.body);
   
-const checkDuplicate=`Select * from tbl_role where roleName='${"Hein"}' and roleId<>0`
-  const selectRole =
-  `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES ('${InsertRoleName}', ${InsertActive==="true"?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
+// const checkDuplicate=`Select * from tbl_role where roleName='${"Hein"}' and roleId<>0`
+//   const selectRole =
+//   `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES ('${InsertRoleName}', ${InsertActive==="true"?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
+//   dbcon.connect(err => {
+//     if (err) throw err;
+//     dbcon.query(selectRole, (err, result, fields) => {
+//       if (err) throw err;
+      
+//       const data = result
+//       res.json(response({ success: true, payload: data }));
+//     });
+//   });
+
+// });
+const checkDuplicate=`Select Count(*) as DR from tbl_role where roleName=trim('${InsertRoleName}')`
+  const insertRole =
+  `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES (trim('${InsertRoleName}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
   dbcon.connect(err => {
     if (err) throw err;
-    dbcon.query(selectRole, (err, result, fields) => {
-      if (err) throw err;
-      
-      const data = result
-      res.json(response({ success: true, payload: data }));
-    });
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))
+      return
+      }
+      else{
+        dbcon.query(insertRole, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
   });
 
 });
 
 
-app.post("/api/user/role/updateRole", (req, res) => {
+app.put("/api/user/role/updateRole", (req, res) => {
   
   const dbcon = mysql.createConnection(
     {
@@ -163,23 +184,34 @@ app.post("/api/user/role/updateRole", (req, res) => {
       database: "restaurant"
     },
   );
-  const UpdateRoleName=req.body.newData.RoleName
-  const UpdateRemark=req.body.newData.Remark
-  const UpdateActive=req.body.newData.active
-  const UpdateId=req.body.newData.roleId
+  const UpdateRoleName=req.body.roleName
+  const UpdateRemark=req.body.remark
+  const UpdateActive=req.body.active
+  const UpdateId=req.body.roleId
 
-  console.log(req.body.newData);
-  
-  const selectRole =
-  `UPDATE tbl_role SET roleName = '${UpdateRoleName}',remark='${UpdateRemark}',createBy=1,active=${UpdateActive==="true"?1:0} WHERE roleId=${UpdateId}`
+  console.log(req.body);
+  const checkDuplicate=`Select Count(*) as DR from tbl_role where roleName=trim('${UpdateRoleName}') and roleId<>'${UpdateId}'`
+
+  const updateRole =
+  `UPDATE tbl_role SET roleName = trim('${UpdateRoleName}'),remark='${UpdateRemark}',createBy=1,active=${UpdateActive===true?1:0} WHERE roleId=${UpdateId}`
   dbcon.connect(err => {
     if (err) throw err;
-    dbcon.query(selectRole, (err, result, fields) => {
-      if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))
       
-      const data = result
-      res.json(response({ success: true, payload: data }));
-    });
+      }
+      else{
+        dbcon.query(updateRole, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
   });
 
 });
