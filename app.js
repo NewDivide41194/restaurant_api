@@ -133,21 +133,8 @@ app.post("/api/user/role/addRole", (req, res) => {
   const InsertActive=req.body.active
   const InsertDate=req.body.createdDate
   console.log(req.body);
-  
-// const checkDuplicate=`Select * from tbl_role where roleName='${"Hein"}' and roleId<>0`
-//   const selectRole =
-//   `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES ('${InsertRoleName}', ${InsertActive==="true"?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
-//   dbcon.connect(err => {
-//     if (err) throw err;
-//     dbcon.query(selectRole, (err, result, fields) => {
-//       if (err) throw err;
-      
-//       const data = result
-//       res.json(response({ success: true, payload: data }));
-//     });
-//   });
+ 
 
-// });
 const checkDuplicate=`Select Count(*) as DR from tbl_role where roleName=trim('${InsertRoleName}')`
   const insertRole =
   `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES (trim('${InsertRoleName}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
@@ -215,6 +202,222 @@ app.put("/api/user/role/updateRole", (req, res) => {
   });
 
 });
+
+app.get("/api/user/department", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+    console.log("connected")
+  );
+  const selectDepartment =
+  "select user.userId,department.departmentId,department.department,department.active,department.remark,department.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_department as department ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId";
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(selectDepartment, (err, result, fields) => {
+      if (err) throw err;
+
+      const data = result
+      res.json(response({ success: true, payload: data }));
+    });
+  });  
+});
+
+app.post("/api/user/department/addDepartment", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+    console.log("connected")
+  );
+  const InsertDepartment=req.body.department
+  const InsertActive=req.body.active
+  const InsertRemark=req.body.remark
+  const InsertDate=req.body.createdDate
+  console.log(req.body);
+ 
+
+const checkDuplicate=`Select Count(*) as DR from tbl_department where department=trim('${InsertDepartment}')`
+  const insertDepartment =
+  `INSERT INTO tbl_department( department, active, remark, createBy, createdDate) VALUES (trim('${InsertDepartment}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))
+      return
+      }
+      else{
+        dbcon.query(insertDepartment, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
+  });
+
+});
+
+app.put("/api/user/department/updateDepartment", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+  );
+  const UpdateDepartment=req.body.department
+  const UpdateRemark=req.body.remark
+  const UpdateActive=req.body.active
+  const UpdateId=req.body.departmentId
+
+  console.log(req.body);
+  const checkDuplicate=`Select Count(*) as DR from tbl_department where department=trim('${UpdateDepartment}') and departmentId<>'${UpdateId}'`
+
+  const updateDepartment =
+  `UPDATE tbl_department SET department = trim('${UpdateDepartment}'),remark='${UpdateRemark}',createBy=1,active=${UpdateActive===true?1:0} WHERE departmentId=${UpdateId}`
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))}
+      else{
+        dbcon.query(updateDepartment, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
+  });
+
+});
+
+app.get("/api/user/designation", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+    console.log("connected")
+  );
+  const selectDesignation =
+  "select user.userId,designation.designationId,designation.designation,designation.active,designation.remark,designation.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_designation as designation ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId";
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(selectDesignation, (err, result, fields) => {
+      if (err) throw err;
+
+      const data = result
+      res.json(response({ success: true, payload: data }));
+    });
+  });  
+});
+
+app.post("/api/user/designation/addDesignation", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+    console.log("connected")
+  );
+  const InsertDesignation=req.body.designation
+  const InsertActive=req.body.active
+  const InsertRemark=req.body.remark
+  const InsertDate=req.body.createdDate
+  console.log(req.body);
+ 
+
+const checkDuplicate=`Select Count(*) as DR from tbl_designation where designation=trim('${InsertDesignation}')`
+  const insertDesignation =
+  `INSERT INTO tbl_designation (designation, active, remark, createBy, createdDate) VALUES (trim('${InsertDesignation}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}');`
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))
+      return
+      }
+      else{
+        dbcon.query(insertDesignation, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
+  });
+
+});
+
+app.put("/api/user/designation/updateDesignation", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+  );
+  const UpdateDesignation=req.body.designation
+  const UpdateRemark=req.body.remark
+  const UpdateActive=req.body.active
+  const UpdateId=req.body.designationId
+
+  console.log(req.body);
+  const checkDuplicate=`Select Count(*) as DR from tbl_designation where designation=trim('${UpdateDesignation}') and designationId<>'${UpdateId}'`
+
+  const updateDesignation =
+  `UPDATE tbl_designation SET designation = trim('${UpdateDesignation}'),remark='${UpdateRemark}',createBy=1,active=${UpdateActive===true?1:0} WHERE designationId='${UpdateId}'`
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))}
+      else{
+        dbcon.query(updateDesignation, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
+  });
+
+});
+
+
 
 // app.use(express.urlencoded({extended:false}))
 
