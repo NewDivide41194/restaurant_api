@@ -104,7 +104,7 @@ app.get("/api/user/role", (req, res) => {
       console.log("connected")
     );
     const selectRole =
-    "select user.userId,role.roleId,role.roleName,role.active,role.remark,role.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_role as role ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId";
+    "select user.userId,role.roleId,role.roleName,role.active,role.remark,role.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_role as role ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId ORDER BY role.roleName";
     dbcon.connect(err => {
       if (err) throw err;
       dbcon.query(selectRole, (err, result, fields) => {
@@ -137,7 +137,7 @@ app.post("/api/user/role/addRole", (req, res) => {
 
 const checkDuplicate=`Select Count(*) as DR from tbl_role where roleName=trim('${InsertRoleName}')`
   const insertRole =
-  `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES (trim('${InsertRoleName}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
+  `INSERT INTO tbl_role (roleName, active, remark,createBy, createdDate) VALUES (trim("${InsertRoleName}"), ${InsertActive?1:0}, trim("${InsertRemark}"), 1, '${InsertDate}')`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
@@ -180,7 +180,7 @@ app.put("/api/user/role/updateRole", (req, res) => {
   const checkDuplicate=`Select Count(*) as DR from tbl_role where roleName=trim('${UpdateRoleName}') and roleId<>'${UpdateId}'`
 
   const updateRole =
-  `UPDATE tbl_role SET roleName = trim('${UpdateRoleName}'),remark='${UpdateRemark}',createBy=1,active=${UpdateActive===true?1:0} WHERE roleId=${UpdateId}`
+  `UPDATE tbl_role SET roleName = trim('${UpdateRoleName}'),remark=trim("${UpdateRemark}"),createBy=1,active=${UpdateActive===true?1:0} WHERE roleId=${UpdateId}`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
@@ -215,7 +215,7 @@ app.get("/api/user/department", (req, res) => {
     console.log("connected")
   );
   const selectDepartment =
-  "select user.userId,department.departmentId,department.department,department.active,department.remark,department.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_department as department ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId";
+  "select user.userId,department.departmentId,department.department,department.active,department.remark,department.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_department as department ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId ORDER BY department.department";
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(selectDepartment, (err, result, fields) => {
@@ -247,7 +247,7 @@ app.post("/api/user/department/addDepartment", (req, res) => {
 
 const checkDuplicate=`Select Count(*) as DR from tbl_department where department=trim('${InsertDepartment}')`
   const insertDepartment =
-  `INSERT INTO tbl_department( department, active, remark, createBy, createdDate) VALUES (trim('${InsertDepartment}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}')`
+  `INSERT INTO tbl_department( department, active, remark, createBy, createdDate) VALUES (trim('${InsertDepartment}'), ${InsertActive?1:0}, trim("${InsertRemark}"), 1, '${InsertDate}')`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
@@ -289,7 +289,7 @@ app.put("/api/user/department/updateDepartment", (req, res) => {
   const checkDuplicate=`Select Count(*) as DR from tbl_department where department=trim('${UpdateDepartment}') and departmentId<>'${UpdateId}'`
 
   const updateDepartment =
-  `UPDATE tbl_department SET department = trim('${UpdateDepartment}'),remark='${UpdateRemark}',createBy=1,active=${UpdateActive===true?1:0} WHERE departmentId=${UpdateId}`
+  `UPDATE tbl_department SET department = trim('${UpdateDepartment}'),remark=trim("${UpdateRemark}"),createBy=1,active=${UpdateActive===true?1:0} WHERE departmentId=${UpdateId}`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
@@ -322,7 +322,7 @@ app.get("/api/user/designation", (req, res) => {
     console.log("connected")
   );
   const selectDesignation =
-  "select user.userId,designation.designationId,designation.designation,designation.active,designation.remark,designation.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_designation as designation ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId";
+  "select user.userId,designation.designationId,designation.designation,designation.active,designation.remark,designation.createdDate,employee.employeeName from tbl_user as user INNER JOIN  tbl_designation as designation ON user.userID inner Join tbl_employee as employee ON user.employeeId=employee.employeeId ORDER BY designation.designation";
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(selectDesignation, (err, result, fields) => {
@@ -354,7 +354,7 @@ app.post("/api/user/designation/addDesignation", (req, res) => {
 
 const checkDuplicate=`Select Count(*) as DR from tbl_designation where designation=trim('${InsertDesignation}')`
   const insertDesignation =
-  `INSERT INTO tbl_designation (designation, active, remark, createBy, createdDate) VALUES (trim('${InsertDesignation}'), ${InsertActive?1:0}, '${InsertRemark}', 1, '${InsertDate}');`
+  `INSERT INTO tbl_designation (designation, active, remark, createBy, createdDate) VALUES (trim('${InsertDesignation}'), ${InsertActive?1:0}, trim("${InsertRemark}"), 1, '${InsertDate}');`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
@@ -396,7 +396,7 @@ app.put("/api/user/designation/updateDesignation", (req, res) => {
   const checkDuplicate=`Select Count(*) as DR from tbl_designation where designation=trim('${UpdateDesignation}') and designationId<>'${UpdateId}'`
 
   const updateDesignation =
-  `UPDATE tbl_designation SET designation = trim('${UpdateDesignation}'),remark='${UpdateRemark}',createBy=1,active=${UpdateActive===true?1:0} WHERE designationId='${UpdateId}'`
+  `UPDATE tbl_designation SET designation = trim('${UpdateDesignation}'),remark=trim("${UpdateRemark}"),createBy=1,active=${UpdateActive===true?1:0} WHERE designationId='${UpdateId}'`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
@@ -417,6 +417,72 @@ app.put("/api/user/designation/updateDesignation", (req, res) => {
 
 });
 
+app.get("/api/user/employee", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+    console.log("connected")
+  );
+  const selectEmployee =
+  "select employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo, employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,department.department,designation.designation,user.userId as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId"
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(selectEmployee, (err, result, fields) => {
+      if (err) throw err;
+
+      const data = result
+      res.json(response({ success: true, payload: data }));
+    });
+  });  
+});
+
+app.post("/api/user/employee/addEmployee", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+    console.log("connected")
+  );
+  const InsertEmployee=req.body.employee
+  const InsertActive=req.body.active
+  const InsertRemark=req.body.remark
+  const InsertDate=req.body.createdDate
+  console.log(req.body);
+ 
+
+const checkDuplicate=`Select Count(*) as DR from tbl_designation where designation=trim('${InsertDesignation}')`
+  const insertDesignation =
+  `INSERT INTO tbl_designation (designation, active, remark, createBy, createdDate) VALUES (trim('${InsertDesignation}'), ${InsertActive?1:0}, trim("${InsertRemark}"), 1, '${InsertDate}');`
+  dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))
+      return
+      }
+      else{
+        dbcon.query(insertDesignation, (err, result, fields) => {
+          if (err) throw err;
+          
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
+  });
+
+});
 
 
 // app.use(express.urlencoded({extended:false}))
