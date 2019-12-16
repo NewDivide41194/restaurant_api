@@ -67,7 +67,6 @@ app.get("/api/user/nav", verifyToken, (req, res) => {
     if (err) {
       res.sendStatus(403);
     } else {
-
       const dbcon = mysql.createConnection(
         {
           host: "localhost",
@@ -429,7 +428,7 @@ app.get("/api/user/employee", (req, res) => {
     console.log("connected")
   );
   const selectEmployee =
-  "select employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo, employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,department.department,designation.designation,user.userId as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId"
+  "select employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo,employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,employee.active,department.department,designation.designation,user.userId as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId"
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(selectEmployee, (err, result, fields) => {
@@ -452,28 +451,90 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
     },
     console.log("connected")
   );
-  const InsertEmployee=req.body.employee
+  const InsertEmployeeName=req.body.employeeName
+  const InsertEmployeeImage=req.body.employeeImage
+  const InsertFatherName=req.body.fatherName
+  const InsertDateOfBirth=req.body.dateOfBirth
+  const InsertNRC=req.body.NRC
+  const InsertJoinDate=req.body.joinDate
+  const InsertDepartmentId=req.body.departmentId
+  const InsertDesignationId=req.body.designationId
+  const InsertEducation=req.body.education
+  const InsertGender=req.body.gender
+  const InsertMaritalStatus=req.body.maritalStatus
+  const InsertAddrerss=req.body.addrerss
+  const InsertCreatedBy=req.body.createdBy
+  const InsertCreatedDate=req.body.createdDate
   const InsertActive=req.body.active
-  const InsertRemark=req.body.remark
-  const InsertDate=req.body.createdDate
-  console.log(req.body);
- 
 
-const checkDuplicate=`Select Count(*) as DR from tbl_designation where designation=trim('${InsertDesignation}')`
-  const insertDesignation =
-  `INSERT INTO tbl_designation (designation, active, remark, createBy, createdDate) VALUES (trim('${InsertDesignation}'), ${InsertActive?1:0}, trim("${InsertRemark}"), 1, '${InsertDate}');`
+  console.log(req.body);
+
+const checkDuplicate=`Select Count(*) as DR from tbl_employee where employeeName=trim('${InsertEmployeeName}')`
+  const insertEmployee =
+  `INSERT INTO restaurant.tbl_employee (employeeImage, employeeName, fatherName, dateOfBirth, nrcNo, joinDate, departmentId, designationId, education, gender, maritalStatus, address, createdBy, createdDate, active) VALUES ('${InsertEmployeeImage}', '${InsertEmployeeName}', '${InsertFatherName}', '${InsertDateOfBirth}', '${InsertNRC}', '${InsertJoinDate}', ${InsertDepartmentId}, ${InsertDesignationId},'${InsertEducation}', '${InsertGender}', '${InsertMaritalStatus}', '${InsertAddrerss}', '${InsertCreatedBy}', '${InsertCreatedDate}', ${InsertActive})`
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(checkDuplicate,(err,result)=>{
       const DuplicateRows=result[0].DR
       if(DuplicateRows>0)
-      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))
+      { res.json(response({ success: false, payload: null,message:"Employee Name Already Exist" }))
       return
       }
       else{
-        dbcon.query(insertDesignation, (err, result, fields) => {
+        dbcon.query(insertEmployee, (err, result, fields) => {
           if (err) throw err;
           
+          const data = result
+          res.json(response({ success: true, payload: data }));
+        });
+      }
+    })
+    
+  });
+
+});
+
+app.put("/api/user/employee/updateEmployee", (req, res) => {
+  
+  const dbcon = mysql.createConnection(
+    {
+      host: "localhost",
+      user: "root",
+      password: "root",
+      database: "restaurant"
+    },
+  );
+  const UpdateEmployeeId=req.body.employeeId
+  const UpdateEmployeeName=req.body.employeeName
+  const UpdateEmployeeImage=req.body.employeeImage
+  const UpdateFatherName=req.body.fatherName
+  const UpdateDateOfBirth=req.body.dateOfBirth
+  const UpdateNRC=req.body.NRC
+  const UpdateJoinDate=req.body.joinDate
+  const UpdateDepartmentId=req.body.departmentId
+  const UpdateDesignationId=req.body.designationId
+  const UpdateEducation=req.body.education
+  const UpdateGender=req.body.gender
+  const UpdateMaritalStatus=req.body.maritalStatus
+  const UpdateAddrerss=req.body.addrerss
+  const UpdateCreatedBy=req.body.createdBy
+  const UpdateCreatedDate=req.body.createdDate
+  const UpdateActive=req.body.active
+
+  console.log(req.body);
+  const checkDuplicate=`Select Count(*) as DR from tbl_employee where employeeName=trim('${UpdateEmployeeName}') and employeeId<>'${UpdateEmployeeId}'`
+
+  const updateEmployee =
+`UPDATE restaurant.tbl_employee SET employeeImage = '${UpdateEmployeeImage}', employeeName = '${UpdateEmployeeName}', fatherName = '${UpdateFatherName}', dateOfBirth = '${UpdateDateOfBirth}', nrcNo = '${UpdateNRC}', joinDate = '${UpdateJoinDate}', departmentId = ${UpdateDepartmentId}, designationId = ${UpdateDesignationId}, education = '${UpdateEducation}', gender = '${UpdateGender}', maritalStatus = '${UpdateMaritalStatus}', address = '${UpdateAddrerss}', createdBy = '${UpdateCreatedBy}', createdDate = '${UpdateCreatedDate}', active = ${UpdateActive} WHERE employeeId=${UpdateEmployeeId}`
+    dbcon.connect(err => {
+    if (err) throw err;
+    dbcon.query(checkDuplicate,(err,result)=>{
+      const DuplicateRows=result[0].DR
+      if(DuplicateRows>0)
+      { res.json(response({ success: false, payload: null,message:"Role Name Already Exist" }))}
+      else{
+        dbcon.query(updateEmployee, (err, result, fields) => {
+          if (err) throw err;          
           const data = result
           res.json(response({ success: true, payload: data }));
         });
