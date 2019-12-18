@@ -428,7 +428,7 @@ app.get("/api/user/employee", (req, res) => {
     console.log("connected")
   );
   const selectEmployee =
-  "select employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo,employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,employee.active,department.department,designation.designation,user.userName as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId"
+  "select user.userId,department.departmentId,designation.designationId,employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo,employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,employee.active,department.department,designation.designation,user.userName as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId"
   dbcon.connect(err => {
     if (err) throw err;
     dbcon.query(selectEmployee, (err, result, fields) => {
@@ -455,14 +455,14 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
   const InsertEmployeeImage=req.body.employeeImage
   const InsertFatherName=req.body.fatherName
   const InsertDateOfBirth=req.body.dateOfBirth
-  const InsertNRC=req.body.NRC
+  const InsertNRC=req.body.nrcNo
   const InsertJoinDate=req.body.joinDate
   const InsertDepartmentId=req.body.departmentId
   const InsertDesignationId=req.body.designationId
   const InsertEducation=req.body.education
   const InsertGender=req.body.gender
   const InsertMaritalStatus=req.body.maritalStatus
-  const InsertAddrerss=req.body.addrerss
+  const InsertAddrerss=req.body.address
   const InsertCreatedBy=req.body.createdBy
   const InsertCreatedDate=req.body.createdDate
   const InsertActive=req.body.active
