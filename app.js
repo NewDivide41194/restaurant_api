@@ -9,11 +9,27 @@ const bcrypt = require("bcryptjs");
 const { produceToken, verifyToken } = require("./security/token");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const multer = require('multer')
+
 
 const privateKey = fs.readFileSync("./security/private.key");
 const response = require("./model/response");
 
 const port = 3001;
+
+const storage = multer.diskStorage({
+  destination: function (req, file, callback) {
+      callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+      callback(null, Date.now() + file.originalname);
+  }
+});
+
+const upload = multer({
+  storage: storage
+}).single('employeeImage')
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -423,36 +439,44 @@ app.get("/api/user/employee", (req, res) => {
       host: "localhost",
       user: "root",
       password: "root",
-      database: "restaurant"
+      database: "restaurant",
+      debug:false,
+      multipleStatements:true
     },
     console.log("connected")
   );
   const selectEmployee =
-  "select user.userId,department.departmentId,designation.designationId,employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo,employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,employee.active,department.department,designation.designation,user.userName as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId"
-  dbcon.connect(err => {
-    if (err) throw err;
+  "select user.userId,department.departmentId,designation.designationId,employee.employeeId,employee.employeeImage,employee.employeeName,employee.fatherName,employee.dateOfBirth,employee.nrcNo,employee.joinDate,employee.education,employee.gender,employee.maritalStatus,employee.address,employee.createdBy,employee.createdDate,employee.active,department.department,designation.designation,user.userName as createdBy from tbl_employee as employee INNER JOIN tbl_department as department ON employee.departmentId=department.departmentId INNER JOIN tbl_designation as designation on employee.designationId=designation.designationId INNER JOIN tbl_user as user on employee.createdBy=user.userId;Select * from tbl_department;Select * from tbl_designation"
+   
     dbcon.query(selectEmployee, (err, result, fields) => {
       if (err) throw err;
 
-      const data = result
-      res.json(response({ success: true, payload: data }));
-    });
+      const data = result[0]
+      const DepData=result[1]
+      const DesData=result[2]
+      const CompoundData=[data,DepData,DesData]
+      
+      res.json(response({ success: true, payload: CompoundData }));
   });  
 });
 
 app.post("/api/user/employee/addEmployee", (req, res) => {
-  
+  console.log("..................................llllllllll......................")
+  upload(req,res,function(err){
+    console.log("err ->",err)
+    console.log("Request  ====>",req);
+    console.log("Request file ====>",req.file);
   const dbcon = mysql.createConnection(
     {
       host: "localhost",
       user: "root",
       password: "root",
-      database: "restaurant"
+      database: "restaurant",
     },
     console.log("connected")
   );
   const InsertEmployeeName=req.body.employeeName
-  const InsertEmployeeImage=req.body.employeeImage
+  const InsertEmployeeImage=req.file.filename
   const InsertFatherName=req.body.fatherName
   const InsertDateOfBirth=req.body.dateOfBirth
   const InsertNRC=req.body.nrcNo
@@ -468,7 +492,7 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
   const InsertActive=req.body.active
 
   console.log(req.body);
-
+ 
 const checkDuplicate=`Select Count(*) as DR from tbl_employee where employeeName=trim('${InsertEmployeeName}')`
   const insertEmployee =
   `INSERT INTO restaurant.tbl_employee (employeeImage, employeeName, fatherName, dateOfBirth, nrcNo, joinDate, departmentId, designationId, education, gender, maritalStatus, address, createdBy, createdDate, active) VALUES ('${InsertEmployeeImage}', '${InsertEmployeeName}', '${InsertFatherName}', '${InsertDateOfBirth}', '${InsertNRC}', '${InsertJoinDate}', ${InsertDepartmentId}, ${InsertDesignationId},'${InsertEducation}', '${InsertGender}', '${InsertMaritalStatus}', '${InsertAddrerss}', '${InsertCreatedBy}', '${InsertCreatedDate}', ${InsertActive})`
@@ -485,12 +509,15 @@ const checkDuplicate=`Select Count(*) as DR from tbl_employee where employeeName
           if (err) throw err;
           
           const data = result
+          
           res.json(response({ success: true, payload: data }));
         });
       }
     })
     
   });
+  })
+
 
 });
 
