@@ -19,7 +19,7 @@ const port = 3001;
 
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
-      callback(null, './uploads');
+      callback(null, './public/uploads');
   },
   filename: function (req, file, callback) {
       callback(null, Date.now() + file.originalname);
@@ -479,7 +479,7 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
   const InsertEmployeeImage=req.file.filename
   const InsertFatherName=req.body.fatherName
   const InsertDateOfBirth=req.body.dateOfBirth
-  const InsertNRC=req.body.nrcNo
+  const InsertNRC=req.body.NRC
   const InsertJoinDate=req.body.joinDate
   const InsertDepartmentId=req.body.departmentId
   const InsertDesignationId=req.body.designationId
@@ -487,7 +487,7 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
   const InsertGender=req.body.gender
   const InsertMaritalStatus=req.body.maritalStatus
   const InsertAddrerss=req.body.address
-  const InsertCreatedBy=req.body.createdBy
+  const InsertCreatedBy=req.body.userId
   const InsertCreatedDate=req.body.createdDate
   const InsertActive=req.body.active
 
@@ -517,12 +517,13 @@ const checkDuplicate=`Select Count(*) as DR from tbl_employee where employeeName
     
   });
   })
-
-
 });
 
 app.put("/api/user/employee/updateEmployee", (req, res) => {
-  
+  upload(req,res,function(err){
+    console.log("err ->",err)
+    console.log("Request  ====>",req);
+    console.log("Request file ====>",req.file);
   const dbcon = mysql.createConnection(
     {
       host: "localhost",
@@ -533,7 +534,7 @@ app.put("/api/user/employee/updateEmployee", (req, res) => {
   );
   const UpdateEmployeeId=req.body.employeeId
   const UpdateEmployeeName=req.body.employeeName
-  const UpdateEmployeeImage=req.body.employeeImage
+  const UpdateEmployeeImage=req.file.filename
   const UpdateFatherName=req.body.fatherName
   const UpdateDateOfBirth=req.body.dateOfBirth
   const UpdateNRC=req.body.NRC
@@ -543,12 +544,12 @@ app.put("/api/user/employee/updateEmployee", (req, res) => {
   const UpdateEducation=req.body.education
   const UpdateGender=req.body.gender
   const UpdateMaritalStatus=req.body.maritalStatus
-  const UpdateAddrerss=req.body.addrerss
-  const UpdateCreatedBy=req.body.createdBy
+  const UpdateAddrerss=req.body.address
+  const UpdateCreatedBy=req.body.userId
   const UpdateCreatedDate=req.body.createdDate
   const UpdateActive=req.body.active
 
-  console.log(req.body);
+  console.log("EMPLOYEE ID===>",req.body.employeeId);
   const checkDuplicate=`Select Count(*) as DR from tbl_employee where employeeName=trim('${UpdateEmployeeName}') and employeeId<>'${UpdateEmployeeId}'`
 
   const updateEmployee =
@@ -569,7 +570,7 @@ app.put("/api/user/employee/updateEmployee", (req, res) => {
     })
     
   });
-
+  })
 });
 
 
