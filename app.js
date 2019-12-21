@@ -11,7 +11,6 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const multer = require('multer')
 
-
 const privateKey = fs.readFileSync("./security/private.key");
 const response = require("./model/response");
 
