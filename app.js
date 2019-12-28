@@ -4,20 +4,20 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
-const app = express();
 const bcrypt = require("bcryptjs");
-const { produceToken, verifyToken } = require("./security/token");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const helmet = require('helmet');
 const multer = require("multer");
-const appRouter=require('./routes')
-
+const appRouter = require("./routes");
 const privateKey = fs.readFileSync("./security/private.key");
+
 const response = require("./model/response");
+const { verifyToken } = require("./security/token");
 
 const port = 3001;
-
-// app.use('/api',appRouter)
+const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
 
 const storage = multer.diskStorage({
   destination: function(req, file, callback) {
@@ -31,7 +31,8 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage
 }).single("employeeImage");
-
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(helmet())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
@@ -47,37 +48,38 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Credentials", true);
   next();
 });
+app.use('/api',appRouter)
 
-app.post("/api/user/login", (req, res) => {
-  const dbcon = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "restaurant"
-  });
-  const user = { name: req.body.userName, password: req.body.password };
-  const selectLogin = `SELECT * FROM tbl_user WHERE password = '${user.password}' AND userName='${user.name}' `;
+// app.post("/api/user/login", (req, res) => {
+//   const dbcon = mysql.createConnection({
+//     host: "localhost",
+//     user: "root",
+//     password: "root",
+//     database: "restaurant"
+//   });
+//   const user = { name: req.body.userName, password: req.body.password };
+//   const selectLogin = `SELECT * FROM tbl_user WHERE password = '${user.password}' AND userName='${user.name}' `;
 
-  dbcon.connect(err => {
-    if (err) throw err;
+//   dbcon.connect(err => {
+//     if (err) throw err;
 
-    const data = [];
-    data.push(user);
-    const token = produceToken(data[0]);
+//     const data = [];
+//     data.push(user);
+//     const token = produceToken(data[0]);
 
-    dbcon.query(selectLogin, (err, result, fields) => {
-      if (result.length == 0) {
-        res.json(
-          response({ success: false, message: "Login Fail!", payload: null })
-        );
-      } else {
-        res.json(response({ success: true, message: token, payload: data }));
+//     dbcon.query(selectLogin, (err, result, fields) => {
+//       if (result.length == 0) {
+//         res.json(
+//           response({ success: false, message: "Login Fail!", payload: null })
+//         );
+//       } else {
+//         res.json(response({ success: true, message: token, payload: data }));
 
-        console.log(token);
-      }
-    });
-  });
-});
+//         console.log(token);
+//       }
+//     });
+//   });
+// });
 
 app.get("/api/user/nav", verifyToken, (req, res) => {
   jwt.verify(req.token, privateKey, err => {
@@ -471,7 +473,7 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
   );
   upload(req, res, function(err) {
     console.log("err ->", err);
-    console.log("Request  ====>", req);
+    // console.log("Request  ====>", req);
     console.log("Request file ====>", req.file);
     const dbcon = mysql.createConnection(
       {
@@ -483,7 +485,9 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
       console.log("connected")
     );
     const InsertEmployeeName = req.body.employeeName;
-    const InsertEmployeeImage = `${req.file?req.file.filename:req.body.employeeImage}`;
+    const InsertEmployeeImage = `${
+      req.file ? req.file.filename : req.body.employeeImage
+    }`;
     const InsertFatherName = req.body.fatherName;
     const InsertDateOfBirth = req.body.dateOfBirth;
     const InsertNRC = req.body.NRC;
@@ -514,6 +518,8 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
               message: "Employee Name Already Exist"
             })
           );
+          console.log("!!!!Duplicate Employee!!!!");
+
           return;
         } else {
           dbcon.query(insertEmployee, (err, result, fields) => {
@@ -521,7 +527,13 @@ app.post("/api/user/employee/addEmployee", (req, res) => {
 
             const data = result;
 
-            res.json(response({ success: true, payload: data }));
+            res.json(
+              response({
+                success: true,
+                payload: data,
+                message: "Employee inserted!"
+              })
+            );
           });
         }
       });
@@ -542,7 +554,9 @@ app.put("/api/user/employee/updateEmployee", (req, res) => {
     });
     const UpdateEmployeeId = req.body.employeeId;
     const UpdateEmployeeName = req.body.employeeName;
-    const UpdateEmployeeImage = `${req.file?req.file.filename:req.body.employeeImage}`;
+    const UpdateEmployeeImage = `${
+      req.file ? req.file.filename : req.body.employeeImage
+    }`;
     const UpdateFatherName = req.body.fatherName;
     const UpdateDateOfBirth = req.body.dateOfBirth;
     const UpdateNRC = req.body.NRC;
@@ -584,7 +598,5 @@ app.put("/api/user/employee/updateEmployee", (req, res) => {
     });
   });
 });
-
-// app.use(express.urlencoded({extended:false}))
 
 app.listen(port, () => console.log(`server is running on port ${port}`));

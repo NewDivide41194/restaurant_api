@@ -1,5 +1,6 @@
 const response=require('../model/response')
 const mysql=require('mysql2')
+const { produceToken } = require("../security/token");
 
 const login=(req,res)=>{
     const dbcon = mysql.createConnection({
@@ -7,10 +8,8 @@ const login=(req,res)=>{
         user: "root",
         password: "root",
         database: "restaurant"
-      });
-      console.log("hello");
-      
-      console.log(req);
+      });      
+      console.log("REQUEST=>>",req.body);
 
       const user = { name: req.body.userName, password: req.body.password };
       const selectLogin = `SELECT * FROM tbl_user WHERE password = '${user.password}' AND userName='${user.name}' `;
